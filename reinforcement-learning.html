@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reinforcement Learning Arena | AI Learning Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        skytrack: '#38bdf8',
+                        aurora: '#34d399',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 20% 10%, rgba(56, 189, 248, 0.1), transparent 45%),
+                radial-gradient(circle at 80% 20%, rgba(14, 116, 144, 0.12), transparent 45%),
+                #020617;
+        }
+        .cell-wrapper {
+            position: relative;
+            border-radius: 22px;
+            overflow: hidden;
+            border: 1px solid rgba(100, 116, 139, 0.25);
+            background: rgba(15, 23, 42, 0.65);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .cell-wrapper.highlight {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px -25px rgba(56, 189, 248, 0.55);
+        }
+        .cell-heat {
+            position: absolute;
+            inset: 0;
+            transition: background 0.4s ease, opacity 0.4s ease;
+            background: rgba(15, 23, 42, 0.75);
+        }
+        .cell-content {
+            position: relative;
+            z-index: 10;
+        }
+        .episode-log {
+            max-height: 220px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .episode-log::-webkit-scrollbar {
+            width: 6px;
+        }
+        .episode-log::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.45);
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col">
+    <header class="bg-slate-950/80 border-b border-slate-800 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between py-5">
+                <a href="index.html" class="flex items-center gap-3">
+                    <div class="h-11 w-11 rounded-xl bg-gradient-to-br from-skytrack via-sky-500 to-indigo-500 flex items-center justify-center font-bold text-slate-950 text-xl">RL</div>
+                    <span class="text-lg font-semibold tracking-wide">AI Learning Lab</span>
+                </a>
+                <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+                    <a href="machine-learning.html" class="hover:text-white transition">Machine Learning</a>
+                    <a href="neural-networks.html" class="hover:text-white transition">Neural Networks</a>
+                    <a href="reinforcement-learning.html" class="text-sky-300">Reinforcement Learning</a>
+                    <a href="reasoning.html" class="hover:text-white transition">Reasoning</a>
+                    <a href="hierarchical-reasoning.html" class="hover:text-white transition">Hierarchical Reasoning</a>
+                </nav>
+                <button id="mobile-menu-button" class="md:hidden text-slate-200">
+                    <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+            <div id="mobile-menu" class="md:hidden hidden pb-6">
+                <nav class="flex flex-col gap-3 text-sm font-medium text-slate-200">
+                    <a href="machine-learning.html" class="hover:text-white transition">Machine Learning</a>
+                    <a href="neural-networks.html" class="hover:text-white transition">Neural Networks</a>
+                    <a href="reinforcement-learning.html" class="text-sky-300">Reinforcement Learning</a>
+                    <a href="reasoning.html" class="hover:text-white transition">Reasoning</a>
+                    <a href="hierarchical-reasoning.html" class="hover:text-white transition">Hierarchical Reasoning</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1">
+        <section class="relative border-b border-slate-800/60 overflow-hidden">
+            <div class="absolute -top-32 right-0 h-96 w-96 rounded-full bg-sky-500/10 blur-3xl"></div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative">
+                <a href="index.html" class="inline-flex items-center text-sm text-slate-400 hover:text-white">
+                    ← Back to overview
+                </a>
+                <div class="mt-6 max-w-3xl">
+                    <h1 class="text-4xl font-bold text-white">Reinforcement Learning Arena</h1>
+                    <p class="mt-4 text-lg text-slate-300">
+                        Train a Q-learning agent inside a glowing grid world. Adjust exploration, watch value estimates glow, and follow the policy as it discovers efficient paths to the goal.
+                    </p>
+                </div>
+                <div class="mt-10 grid gap-6 sm:grid-cols-4">
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                        <p class="text-xs uppercase tracking-wide text-slate-400">Episode</p>
+                        <p class="mt-2 text-2xl font-semibold text-white" id="episode-number">1</p>
+                        <p class="mt-1 text-xs text-slate-500">Current training episode</p>
+                    </div>
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                        <p class="text-xs uppercase tracking-wide text-slate-400">Steps</p>
+                        <p class="mt-2 text-2xl font-semibold text-white" id="step-number">0</p>
+                        <p class="mt-1 text-xs text-slate-500">Moves within the episode</p>
+                    </div>
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                        <p class="text-xs uppercase tracking-wide text-slate-400">Reward</p>
+                        <p class="mt-2 text-2xl font-semibold text-white" id="reward-number">0.0</p>
+                        <p class="mt-1 text-xs text-slate-500">Accumulated this episode</p>
+                    </div>
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                        <p class="text-xs uppercase tracking-wide text-slate-400">ε (exploration)</p>
+                        <p class="mt-2 text-2xl font-semibold text-white" id="epsilon-number">0.30</p>
+                        <p class="mt-1 text-xs text-slate-500">Decays as experience grows</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid gap-10 lg:grid-cols-[1.6fr,1fr]">
+                    <div class="bg-slate-950/70 border border-slate-800 rounded-[28px] p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="text-2xl font-semibold text-white">Q-learning playground</h2>
+                                <p class="text-sm text-slate-400">Value estimates glow brighter as the policy matures.</p>
+                            </div>
+                            <span class="inline-flex items-center gap-2 rounded-full bg-sky-500/15 px-3 py-1 text-xs font-semibold text-sky-300">
+                                <span class="h-2 w-2 rounded-full bg-sky-300 animate-ping"></span>
+                                Training
+                            </span>
+                        </div>
+                        <div id="grid" class="mt-8 grid gap-4"></div>
+                    </div>
+                    <div class="bg-slate-950/70 border border-slate-800 rounded-[28px] p-6 flex flex-col gap-6">
+                        <div>
+                            <h3 class="text-xl font-semibold text-white">Control panel</h3>
+                            <p class="mt-2 text-sm text-slate-400">Adjust exploration pressure and observe the policy shift.</p>
+                        </div>
+                        <div>
+                            <label for="exploration" class="text-xs uppercase tracking-wide text-slate-400">Exploration rate</label>
+                            <div class="mt-2 flex items-center gap-4">
+                                <input id="exploration" type="range" min="0.05" max="0.9" step="0.01" value="0.3" class="w-full accent-sky-400" />
+                                <span id="exploration-value" class="text-sm font-semibold text-sky-300">0.30</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 text-sm text-slate-300">
+                            <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                                <p class="text-xs uppercase tracking-wide text-slate-400">Learning rate α</p>
+                                <p class="mt-2 text-lg font-semibold text-white">0.18</p>
+                                <p class="mt-1 text-xs text-slate-500">How quickly Q-values update</p>
+                            </div>
+                            <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                                <p class="text-xs uppercase tracking-wide text-slate-400">Discount γ</p>
+                                <p class="mt-2 text-lg font-semibold text-white">0.92</p>
+                                <p class="mt-1 text-xs text-slate-500">Weight of future rewards</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-3">
+                            <button id="toggle-training" class="flex-1 rounded-full bg-gradient-to-r from-sky-400 to-indigo-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-sky-500/30 hover:shadow-xl hover:shadow-indigo-500/40">Start training</button>
+                            <button id="reset-training" class="rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:border-sky-400/60 hover:text-white">Reset</button>
+                        </div>
+                        <div>
+                            <p class="text-xs uppercase tracking-wide text-slate-400">Episode timeline</p>
+                            <div id="episode-log" class="episode-log mt-3 space-y-2 text-xs text-slate-300 font-mono"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-16 grid gap-10 lg:grid-cols-2">
+                    <div class="bg-slate-950/70 border border-slate-800 rounded-[28px] p-6">
+                        <h3 class="text-xl font-semibold text-white">Environment notes</h3>
+                        <ul class="mt-4 space-y-3 text-sm text-slate-300">
+                            <li><span class="font-semibold text-sky-300">Goal:</span> Reach the glowing target tile for +12 reward.</li>
+                            <li><span class="font-semibold text-sky-300">Hazards:</span> Avoid the two red obstacles (−6 penalty) that reset the agent.</li>
+                            <li><span class="font-semibold text-sky-300">Step cost:</span> Every move costs −0.05 to encourage efficiency.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-950/70 border border-slate-800 rounded-[28px] p-6">
+                        <h3 class="text-xl font-semibold text-white">Learning checklist</h3>
+                        <ol class="mt-4 space-y-3 text-sm text-slate-300 list-decimal list-inside">
+                            <li>Observe how early episodes glow inconsistently across the grid.</li>
+                            <li>Watch the policy arrows align toward the goal as ε decays.</li>
+                            <li>Compare episode logs before and after adjusting exploration pressure.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-slate-800/60 bg-slate-950/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-sm text-slate-400 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p>© <span id="footer-year"></span> AI Learning Lab.</p>
+            <p>Experiment with exploration vs. exploitation dynamics.</p>
+        </div>
+    </footer>
+
+    <script>
+        const mobileBtn = document.getElementById('mobile-menu-button');
+        const mobileNav = document.getElementById('mobile-menu');
+        if (mobileBtn && mobileNav) {
+            mobileBtn.addEventListener('click', () => mobileNav.classList.toggle('hidden'));
+        }
+        const yearTarget = document.getElementById('footer-year');
+        if (yearTarget) {
+            yearTarget.textContent = new Date().getFullYear();
+        }
+
+        const gridElement = document.getElementById('grid');
+        const toggleButton = document.getElementById('toggle-training');
+        const resetButton = document.getElementById('reset-training');
+        const explorationInput = document.getElementById('exploration');
+        const explorationValue = document.getElementById('exploration-value');
+        const episodeNumber = document.getElementById('episode-number');
+        const stepNumber = document.getElementById('step-number');
+        const rewardNumber = document.getElementById('reward-number');
+        const epsilonNumber = document.getElementById('epsilon-number');
+        const episodeLog = document.getElementById('episode-log');
+
+        const gridSize = 5;
+        const goal = { x: 4, y: 4 };
+        const obstacles = [
+            { x: 1, y: 3 },
+            { x: 3, y: 1 },
+        ];
+        const actions = [
+            { name: 'up', dx: 0, dy: -1, icon: '↑' },
+            { name: 'right', dx: 1, dy: 0, icon: '→' },
+            { name: 'down', dx: 0, dy: 1, icon: '↓' },
+            { name: 'left', dx: -1, dy: 0, icon: '←' },
+        ];
+        const alpha = 0.18;
+        const gamma = 0.92;
+        let baseEpsilon = parseFloat(explorationInput.value);
+        let epsilon = baseEpsilon;
+        let trainingInterval = null;
+        let episode = 1;
+        let step = 0;
+        let cumulativeReward = 0;
+        let agent = { x: 0, y: 0 };
+
+        const qTable = Array.from({ length: gridSize }, () =>
+            Array.from({ length: gridSize }, () => actions.map(() => 0))
+        );
+
+        const cellRefs = [];
+
+        function createGrid() {
+            gridElement.style.gridTemplateColumns = `repeat(${gridSize}, minmax(0, 1fr))`;
+            for (let y = 0; y < gridSize; y++) {
+                const row = [];
+                for (let x = 0; x < gridSize; x++) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'cell-wrapper aspect-square';
+                    const heat = document.createElement('div');
+                    heat.className = 'cell-heat';
+                    const content = document.createElement('div');
+                    content.className = 'cell-content flex h-full flex-col items-center justify-center text-lg font-semibold text-slate-200';
+                    const detail = document.createElement('div');
+                    detail.className = 'pointer-events-none absolute bottom-2 left-2 text-[10px] font-mono text-slate-400';
+                    wrapper.appendChild(heat);
+                    wrapper.appendChild(content);
+                    wrapper.appendChild(detail);
+                    gridElement.appendChild(wrapper);
+                    row.push({ wrapper, heat, content, detail });
+                }
+                cellRefs.push(row);
+            }
+        }
+
+        function valueToColor(value, min, max) {
+            if (!isFinite(value)) return 'rgba(15, 23, 42, 0.8)';
+            const clamped = max - min < 0.0001 ? 0.5 : (value - min) / (max - min);
+            const hue = 200 + clamped * 120; // from blue to green
+            const saturation = 70;
+            const lightness = 18 + clamped * 25;
+            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        }
+
+        function updateGrid() {
+            let minQ = Infinity;
+            let maxQ = -Infinity;
+            for (let y = 0; y < gridSize; y++) {
+                for (let x = 0; x < gridSize; x++) {
+                    const localMax = Math.max(...qTable[y][x]);
+                    if (localMax < minQ) minQ = localMax;
+                    if (localMax > maxQ) maxQ = localMax;
+                }
+            }
+            for (let y = 0; y < gridSize; y++) {
+                for (let x = 0; x < gridSize; x++) {
+                    const cell = cellRefs[y][x];
+                    cell.wrapper.classList.remove('highlight');
+                    cell.wrapper.classList.remove('ring-4', 'ring-emerald-400/70', 'ring-sky-400/70');
+                    cell.wrapper.style.borderColor = 'rgba(100, 116, 139, 0.25)';
+                    cell.content.textContent = actions[qTable[y][x].indexOf(Math.max(...qTable[y][x]))].icon;
+                    cell.detail.textContent = Math.max(...qTable[y][x]).toFixed(2);
+                    cell.heat.style.background = valueToColor(Math.max(...qTable[y][x]), minQ, maxQ);
+                    cell.heat.style.opacity = 0.85;
+
+                    if (x === goal.x && y === goal.y) {
+                        cell.content.textContent = '🎯';
+                        cell.wrapper.classList.add('ring-4', 'ring-emerald-400/70');
+                        cell.heat.style.background = 'rgba(16, 185, 129, 0.25)';
+                        cell.detail.textContent = '+12';
+                    }
+
+                    if (obstacles.some((ob) => ob.x === x && ob.y === y)) {
+                        cell.content.textContent = '⛔';
+                        cell.heat.style.background = 'rgba(248, 113, 113, 0.25)';
+                        cell.detail.textContent = '-6';
+                    }
+
+                    if (agent.x === x && agent.y === y) {
+                        cell.content.textContent = '🤖';
+                        cell.wrapper.classList.add('highlight');
+                        cell.detail.textContent = 'agent';
+                    }
+                }
+            }
+        }
+
+        function chooseAction(state) {
+            if (Math.random() < epsilon) {
+                return Math.floor(Math.random() * actions.length);
+            }
+            const stateQ = qTable[state.y][state.x];
+            let bestIndex = 0;
+            let bestValue = stateQ[0];
+            for (let i = 1; i < stateQ.length; i++) {
+                if (stateQ[i] > bestValue) {
+                    bestValue = stateQ[i];
+                    bestIndex = i;
+                }
+            }
+            return bestIndex;
+        }
+
+        function stepEnvironment(actionIndex) {
+            const action = actions[actionIndex];
+            const nextX = Math.max(0, Math.min(gridSize - 1, agent.x + action.dx));
+            const nextY = Math.max(0, Math.min(gridSize - 1, agent.y + action.dy));
+            let reward = -0.05;
+            let done = false;
+
+            if (obstacles.some((ob) => ob.x === nextX && ob.y === nextY)) {
+                reward = -6;
+                done = true;
+            } else if (goal.x === nextX && goal.y === nextY) {
+                reward = 12;
+                done = true;
+            }
+
+            const nextState = done ? { x: 0, y: 0 } : { x: nextX, y: nextY };
+            if (!done) {
+                agent = nextState;
+            }
+
+            return { nextState, reward, done };
+        }
+
+        function updateQTable(state, actionIndex, reward, nextState, done) {
+            const currentQ = qTable[state.y][state.x][actionIndex];
+            const nextMax = done ? 0 : Math.max(...qTable[nextState.y][nextState.x]);
+            const target = reward + gamma * nextMax;
+            const newValue = currentQ + alpha * (target - currentQ);
+            qTable[state.y][state.x][actionIndex] = newValue;
+        }
+
+        function logEpisode(summary) {
+            const entry = document.createElement('div');
+            entry.className = 'rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2';
+            entry.textContent = summary;
+            episodeLog.prepend(entry);
+            while (episodeLog.children.length > 10) {
+                episodeLog.removeChild(episodeLog.lastChild);
+            }
+        }
+
+        function updateHud() {
+            episodeNumber.textContent = episode.toString();
+            stepNumber.textContent = step.toString();
+            rewardNumber.textContent = cumulativeReward.toFixed(2);
+            epsilonNumber.textContent = epsilon.toFixed(2);
+        }
+
+        function resetEpisode() {
+            agent = { x: 0, y: 0 };
+            step = 0;
+            cumulativeReward = 0;
+            epsilon = Math.max(0.02, epsilon * 0.985);
+            updateHud();
+        }
+
+        function runTrainingStep() {
+            const state = { ...agent };
+            const actionIndex = chooseAction(state);
+            const { nextState, reward, done } = stepEnvironment(actionIndex);
+            cumulativeReward += reward;
+            step += 1;
+            updateQTable(state, actionIndex, reward, done ? state : nextState, done);
+            if (done || step > 40) {
+                logEpisode(`Episode ${episode.toString().padStart(3, '0')} — steps: ${step.toString().padStart(2, '0')} reward: ${cumulativeReward.toFixed(2)} ε: ${epsilon.toFixed(2)}`);
+                episode += 1;
+                resetEpisode();
+            } else {
+                agent = nextState;
+            }
+            updateHud();
+            updateGrid();
+        }
+
+        function startTraining() {
+            if (trainingInterval) return;
+            toggleButton.textContent = 'Pause training';
+            trainingInterval = setInterval(runTrainingStep, 220);
+        }
+
+        function pauseTraining() {
+            if (trainingInterval) {
+                clearInterval(trainingInterval);
+                trainingInterval = null;
+            }
+            toggleButton.textContent = 'Resume training';
+        }
+
+        function resetTraining() {
+            pauseTraining();
+            for (let y = 0; y < gridSize; y++) {
+                for (let x = 0; x < gridSize; x++) {
+                    qTable[y][x] = actions.map(() => 0);
+                }
+            }
+            epsilon = baseEpsilon;
+            agent = { x: 0, y: 0 };
+            episode = 1;
+            step = 0;
+            cumulativeReward = 0;
+            episodeLog.innerHTML = '';
+            toggleButton.textContent = 'Start training';
+            updateHud();
+            updateGrid();
+        }
+
+        explorationInput.addEventListener('input', () => {
+            baseEpsilon = parseFloat(explorationInput.value);
+            explorationValue.textContent = baseEpsilon.toFixed(2);
+            epsilon = baseEpsilon;
+            epsilonNumber.textContent = epsilon.toFixed(2);
+        });
+
+        toggleButton.addEventListener('click', () => {
+            if (trainingInterval) {
+                pauseTraining();
+            } else {
+                startTraining();
+            }
+        });
+
+        resetButton.addEventListener('click', resetTraining);
+
+        createGrid();
+        updateGrid();
+        updateHud();
+
+        window.addEventListener('beforeunload', pauseTraining);
+    </script>
+</body>
+</html>

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hierarchical Reasoning Studio | AI Learning Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        aurora: '#34d399',
+                        cobalt: '#6366f1',
+                        midnight: '#020617',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 20% 15%, rgba(99, 102, 241, 0.12), transparent 45%),
+                radial-gradient(circle at 80% 10%, rgba(52, 211, 153, 0.1), transparent 45%),
+                #020617;
+        }
+        .node-card {
+            border-radius: 22px;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            background: rgba(15, 23, 42, 0.7);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
+        }
+        .node-card:hover {
+            transform: translateY(-4px);
+        }
+        .node-card.active {
+            border-color: rgba(99, 102, 241, 0.7);
+            box-shadow: 0 20px 45px -28px rgba(99, 102, 241, 0.65);
+        }
+        .branch {
+            border-left: 1px dashed rgba(148, 163, 184, 0.35);
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col">
+    <header class="bg-slate-950/80 border-b border-slate-800 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between py-5">
+                <a href="index.html" class="flex items-center gap-3">
+                    <div class="h-11 w-11 rounded-xl bg-gradient-to-br from-emerald-400 via-cobalt to-indigo-500 flex items-center justify-center font-bold text-slate-950 text-xl">HR</div>
+                    <span class="text-lg font-semibold tracking-wide">AI Learning Lab</span>
+                </a>
+                <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+                    <a href="machine-learning.html" class="hover:text-white transition">Machine Learning</a>
+                    <a href="neural-networks.html" class="hover:text-white transition">Neural Networks</a>
+                    <a href="reinforcement-learning.html" class="hover:text-white transition">Reinforcement Learning</a>
+                    <a href="reasoning.html" class="hover:text-white transition">Reasoning</a>
+                    <a href="hierarchical-reasoning.html" class="text-emerald-200">Hierarchical Reasoning</a>
+                </nav>
+                <button id="mobile-menu-button" class="md:hidden text-slate-200">
+                    <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+            <div id="mobile-menu" class="md:hidden hidden pb-6">
+                <nav class="flex flex-col gap-3 text-sm font-medium text-slate-200">
+                    <a href="machine-learning.html" class="hover:text-white transition">Machine Learning</a>
+                    <a href="neural-networks.html" class="hover:text-white transition">Neural Networks</a>
+                    <a href="reinforcement-learning.html" class="hover:text-white transition">Reinforcement Learning</a>
+                    <a href="reasoning.html" class="hover:text-white transition">Reasoning</a>
+                    <a href="hierarchical-reasoning.html" class="text-emerald-200">Hierarchical Reasoning</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1">
+        <section class="relative border-b border-slate-800/60 overflow-hidden">
+            <div class="absolute -top-32 right-0 h-96 w-96 rounded-full bg-emerald-500/15 blur-3xl"></div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative">
+                <a href="index.html" class="inline-flex items-center text-sm text-slate-400 hover:text-white">
+                    ← Back to overview
+                </a>
+                <div class="mt-6 max-w-3xl">
+                    <h1 class="text-4xl font-bold text-white">Hierarchical reasoning studio</h1>
+                    <p class="mt-4 text-lg text-slate-300">
+                        Explore how strategic goals decompose into tactical plans and ground-level actions. Animate the decomposition or inspect each node to understand its role in the hierarchy.
+                    </p>
+                </div>
+                <div class="mt-10 grid gap-6 sm:grid-cols-3">
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                        <p class="text-xs uppercase tracking-wide text-slate-400">Scenario</p>
+                        <p class="mt-2 text-lg font-semibold text-white" id="scenario-name">—</p>
+                        <p class="mt-1 text-xs text-slate-500" id="scenario-summary">Select a scenario to begin.</p>
+                    </div>
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                        <p class="text-xs uppercase tracking-wide text-slate-400">Levels</p>
+                        <p class="mt-2 text-2xl font-semibold text-white" id="level-count">0</p>
+                        <p class="mt-1 text-xs text-slate-500">Depth of the hierarchical plan</p>
+                    </div>
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                        <p class="text-xs uppercase tracking-wide text-slate-400">Currently focused</p>
+                        <p class="mt-2 text-lg font-semibold text-emerald-300" id="focus-name">—</p>
+                        <p class="mt-1 text-xs text-slate-500" id="focus-detail">Choose a node to inspect its responsibility.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid gap-10 lg:grid-cols-[1.5fr,1fr]">
+                    <div class="rounded-[28px] border border-slate-800 bg-slate-950/70 p-6">
+                        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                            <div>
+                                <h2 class="text-2xl font-semibold text-white">Decomposition playground</h2>
+                                <p class="text-sm text-slate-400">Follow how each goal cascades into subgoals, tasks, and execution checks.</p>
+                            </div>
+                            <div class="flex flex-col gap-4 lg:w-80">
+                                <label class="text-xs uppercase tracking-wide text-slate-400" for="hierarchy-select">Scenario</label>
+                                <select id="hierarchy-select" class="rounded-2xl border border-slate-700 bg-slate-900/70 px-4 py-2 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none">
+                                </select>
+                                <button id="play-hierarchy" class="rounded-full bg-gradient-to-r from-emerald-400 to-cobalt px-5 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-400/30 hover:shadow-xl hover:shadow-cobalt/40">Play decomposition</button>
+                            </div>
+                        </div>
+                        <div id="tree-container" class="mt-8 space-y-4"></div>
+                    </div>
+                    <div class="rounded-[28px] border border-slate-800 bg-slate-950/70 p-6 space-y-6">
+                        <div>
+                            <h3 class="text-xl font-semibold text-white">Focus panel</h3>
+                            <p class="mt-2 text-sm text-slate-400">Click any node to see context, dependencies, and success criteria.</p>
+                        </div>
+                        <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-3">
+                            <p class="text-xs uppercase tracking-wide text-slate-400">Node</p>
+                            <p class="text-lg font-semibold text-white" id="insight-title">—</p>
+                            <p class="text-sm text-slate-300" id="insight-detail">Select a node to view its description.</p>
+                            <div class="text-xs text-slate-400" id="insight-path"></div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-white">Execution notes</h3>
+                            <ul class="mt-3 space-y-3 text-sm text-slate-300" id="insight-hints"></ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-16 grid gap-10 lg:grid-cols-2">
+                    <div class="rounded-[26px] border border-slate-800 bg-slate-950/70 p-6">
+                        <h3 class="text-xl font-semibold text-white">Hierarchy anatomy</h3>
+                        <ul class="mt-4 space-y-3 text-sm text-slate-300">
+                            <li><span class="font-semibold text-emerald-300">Level 1:</span> Vision — the overarching intention.</li>
+                            <li><span class="font-semibold text-emerald-300">Level 2:</span> Strategies — major workstreams to accomplish the vision.</li>
+                            <li><span class="font-semibold text-emerald-300">Level 3:</span> Tactics — specific tasks, checkpoints, or deliverables.</li>
+                        </ul>
+                    </div>
+                    <div class="rounded-[26px] border border-slate-800 bg-slate-950/70 p-6">
+                        <h3 class="text-xl font-semibold text-white">Try this</h3>
+                        <ol class="mt-4 space-y-3 text-sm text-slate-300 list-decimal list-inside">
+                            <li>Animate the plan to see top-down activation, then inspect leaf nodes in reverse.</li>
+                            <li>Switch scenarios to compare product launches, research briefings, and robotics missions.</li>
+                            <li>Use the focus panel to trace dependencies and success metrics.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-slate-800/60 bg-slate-950/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-sm text-slate-400 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p>© <span id="footer-year"></span> AI Learning Lab.</p>
+            <p>Coordinate strategy and execution by revealing the hierarchy.</p>
+        </div>
+    </footer>
+
+    <script>
+        const mobileBtn = document.getElementById('mobile-menu-button');
+        const mobileNav = document.getElementById('mobile-menu');
+        if (mobileBtn && mobileNav) mobileBtn.addEventListener('click', () => mobileNav.classList.toggle('hidden'));
+        const yearTarget = document.getElementById('footer-year');
+        if (yearTarget) yearTarget.textContent = new Date().getFullYear();
+
+        const scenarios = [
+            {
+                id: 'research',
+                name: 'Research briefing preparation',
+                summary: 'Produce an executive briefing on climate resilience strategies for city planners.',
+                hints: [
+                    'Balance rapid desk research with expert interviews.',
+                    'Define success metrics before collecting data.',
+                    'Schedule stakeholder review before final synthesis.',
+                ],
+                tree: {
+                    name: 'Deliver climate resilience briefing',
+                    detail: 'One-page synthesis with actionable recommendations.',
+                    children: [
+                        {
+                            name: 'Map the landscape',
+                            detail: 'Collect foundational knowledge about climate risks in coastal cities.',
+                            children: [
+                                {
+                                    name: 'Review latest reports',
+                                    detail: 'Summaries from UN, IPCC, and regional agencies.',
+                                    children: [],
+                                },
+                                {
+                                    name: 'Interview domain experts',
+                                    detail: 'Schedule two 20-minute calls with urban resilience leads.',
+                                    children: [],
+                                },
+                            ],
+                        },
+                        {
+                            name: 'Prioritize interventions',
+                            detail: 'Evaluate candidate strategies for feasibility and impact.',
+                            children: [
+                                {
+                                    name: 'Score options',
+                                    detail: 'Use a matrix covering cost, speed, and scalability.',
+                                    children: [],
+                                },
+                                {
+                                    name: 'Draft recommendations',
+                                    detail: 'Select top three interventions with supporting evidence.',
+                                    children: [],
+                                },
+                            ],
+                        },
+                        {
+                            name: 'Assemble briefing',
+                            detail: 'Design the final deliverable for busy officials.',
+                            children: [
+                                {
+                                    name: 'Create visual story',
+                                    detail: 'Combine charts, callouts, and annotated maps.',
+                                    children: [],
+                                },
+                                {
+                                    name: 'Facilitate review',
+                                    detail: 'Run a quick feedback session with stakeholders.',
+                                    children: [],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            },
+            {
+                id: 'product',
+                name: 'AI product launch',
+                summary: 'Coordinate the release of a new intelligent assistant feature.',
+                hints: [
+                    'Align launch messaging with quantified success stories.',
+                    'Ensure safety review clears all new capabilities.',
+                    'Pilot onboarding scripts internally before customer rollout.',
+                ],
+                tree: {
+                    name: 'Launch intelligent assistant upgrade',
+                    detail: 'Deliver confident, safe release to paying customers.',
+                    children: [
+                        {
+                            name: 'Finalize capability stack',
+                            detail: 'Confirm feature set, guardrails, and telemetry.',
+                            children: [
+                                { name: 'Validate safety tests', detail: 'Red-team new workflows and evaluate mitigations.', children: [] },
+                                { name: 'Lock telemetry events', detail: 'Ensure analytics capture success and failure signals.', children: [] },
+                            ],
+                        },
+                        {
+                            name: 'Craft launch narrative',
+                            detail: 'Explain value clearly to customers and partners.',
+                            children: [
+                                { name: 'Gather customer stories', detail: 'Document three beta wins with measurable outcomes.', children: [] },
+                                { name: 'Produce launch assets', detail: 'Write blog, email, and in-product announcements.', children: [] },
+                            ],
+                        },
+                        {
+                            name: 'Prepare go-live operations',
+                            detail: 'Ensure internal teams can support the surge.',
+                            children: [
+                                { name: 'Train support staff', detail: 'Run playbook workshop and Q&A.', children: [] },
+                                { name: 'Monitor rollout', detail: 'Set up dashboards and escalation protocols.', children: [] },
+                            ],
+                        },
+                    ],
+                },
+            },
+            {
+                id: 'robotics',
+                name: 'Multi-robot warehouse mission',
+                summary: 'Deploy collaborative robots to restock and audit inventory overnight.',
+                hints: [
+                    'Synchronize map updates before assigning tasks.',
+                    'Pair each inspection robot with a restock robot for coverage.',
+                    'Schedule recharge windows to avoid congestion.',
+                ],
+                tree: {
+                    name: 'Complete overnight warehouse mission',
+                    detail: 'Restock 120 SKUs and verify counts before opening hours.',
+                    children: [
+                        {
+                            name: 'Plan environment map',
+                            detail: 'Confirm aisles, obstacles, and charging stations.',
+                            children: [
+                                { name: 'Sync floor map', detail: 'Integrate latest human edits and sensor data.', children: [] },
+                                { name: 'Mark dynamic zones', detail: 'Flag aisles with forklift activity to avoid.', children: [] },
+                            ],
+                        },
+                        {
+                            name: 'Assign robot pairs',
+                            detail: 'Match restockers with inspectors by zone.',
+                            children: [
+                                { name: 'Cluster shelf segments', detail: 'Group SKUs by location density.', children: [] },
+                                { name: 'Bind robot teams', detail: 'Pair robots with complementary battery levels.', children: [] },
+                            ],
+                        },
+                        {
+                            name: 'Execute mission loops',
+                            detail: 'Run sequences of restock and audit tasks.',
+                            children: [
+                                { name: 'Restock inventory', detail: 'Deliver totes to assigned shelves.', children: [] },
+                                { name: 'Audit counts', detail: 'Scan and reconcile inventory variance.', children: [] },
+                            ],
+                        },
+                    ],
+                },
+            },
+        ];
+
+        const hierarchySelect = document.getElementById('hierarchy-select');
+        const scenarioName = document.getElementById('scenario-name');
+        const scenarioSummary = document.getElementById('scenario-summary');
+        const levelCount = document.getElementById('level-count');
+        const treeContainer = document.getElementById('tree-container');
+        const focusName = document.getElementById('focus-name');
+        const focusDetail = document.getElementById('focus-detail');
+        const focusPath = document.getElementById('insight-path');
+        const focusHints = document.getElementById('insight-hints');
+        const playButton = document.getElementById('play-hierarchy');
+
+        let activeScenario = scenarios[0];
+        let orderedNodes = [];
+        let playTimeouts = [];
+
+        scenarios.forEach((scenario) => {
+            const option = document.createElement('option');
+            option.value = scenario.id;
+            option.textContent = scenario.name;
+            hierarchySelect.appendChild(option);
+        });
+        hierarchySelect.value = activeScenario.id;
+
+        function countLevels(node) {
+            if (!node.children || node.children.length === 0) return 1;
+            return 1 + Math.max(...node.children.map(countLevels));
+        }
+
+        function createNodeCard(node, depth, path) {
+            const wrapper = document.createElement('div');
+            const card = document.createElement('div');
+            card.className = 'node-card p-5';
+            card.dataset.path = path.join(' › ');
+            card.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-700 bg-slate-900/60 text-xs font-semibold text-emerald-200">L${depth + 1}</span>
+                    <span class="text-xs uppercase tracking-wide text-slate-500">${node.children.length ? 'Composite' : 'Action'}</span>
+                </div>
+                <h4 class="mt-4 text-lg font-semibold text-white">${node.name}</h4>
+                <p class="mt-2 text-sm text-slate-300">${node.detail}</p>
+            `;
+            wrapper.appendChild(card);
+
+            card.addEventListener('click', () => {
+                highlightCard(card);
+                updateFocus(node, path);
+            });
+
+            orderedNodes.push({ card, node, path });
+
+            if (node.children && node.children.length) {
+                const branch = document.createElement('div');
+                branch.className = 'branch ml-6 mt-3 space-y-4 border-slate-700 pl-6';
+                node.children.forEach((child) => {
+                    const childPath = [...path, child.name];
+                    branch.appendChild(createNodeCard(child, depth + 1, childPath));
+                });
+                wrapper.appendChild(branch);
+            }
+            return wrapper;
+        }
+
+        function renderTree() {
+            orderedNodes = [];
+            treeContainer.innerHTML = '';
+            const rootPath = [activeScenario.tree.name];
+            treeContainer.appendChild(createNodeCard(activeScenario.tree, 0, rootPath));
+            levelCount.textContent = countLevels(activeScenario.tree).toString();
+        }
+
+        function updateFocus(node, path) {
+            focusName.textContent = node.name;
+            focusDetail.textContent = node.detail;
+            focusPath.textContent = `Path: ${path.join(' › ')}`;
+            focusHints.innerHTML = activeScenario.hints
+                .map((hint) => `<li>• ${hint}</li>`)
+                .join('');
+        }
+
+        function highlightCard(targetCard) {
+            orderedNodes.forEach(({ card }) => card.classList.remove('active'));
+            targetCard.classList.add('active');
+        }
+
+        function stopAnimation() {
+            playTimeouts.forEach(clearTimeout);
+            playTimeouts = [];
+        }
+
+        function playHierarchyAnimation() {
+            stopAnimation();
+            orderedNodes.forEach(({ card }) => card.classList.remove('active'));
+            orderedNodes.forEach(({ card }, index) => {
+                const timeout = setTimeout(() => {
+                    highlightCard(card);
+                    const node = orderedNodes[index].node;
+                    const path = orderedNodes[index].path;
+                    updateFocus(node, path);
+                }, index * 550);
+                playTimeouts.push(timeout);
+            });
+        }
+
+        hierarchySelect.addEventListener('change', () => {
+            const next = scenarios.find((scenario) => scenario.id === hierarchySelect.value);
+            if (!next) return;
+            activeScenario = next;
+            scenarioName.textContent = activeScenario.name;
+            scenarioSummary.textContent = activeScenario.summary;
+            renderTree();
+            focusName.textContent = '—';
+            focusDetail.textContent = 'Select a node to view its description.';
+            focusPath.textContent = '';
+            focusHints.innerHTML = activeScenario.hints.map((hint) => `<li>• ${hint}</li>`).join('');
+        });
+
+        playButton.addEventListener('click', () => {
+            if (!orderedNodes.length) return;
+            playHierarchyAnimation();
+        });
+
+        scenarioName.textContent = activeScenario.name;
+        scenarioSummary.textContent = activeScenario.summary;
+        focusHints.innerHTML = activeScenario.hints.map((hint) => `<li>• ${hint}</li>`).join('');
+        renderTree();
+    </script>
+</body>
+</html>
