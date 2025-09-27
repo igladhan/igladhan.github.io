@@ -64,6 +64,93 @@
             background: rgba(148, 163, 184, 0.45);
             border-radius: 9999px;
         }
+        .neuron-column {
+            min-width: 170px;
+        }
+        .neuron-grid {
+            display: grid;
+            gap: 0.45rem;
+        }
+        .neuron {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%;
+            border-radius: 9999px;
+            background: rgba(14, 116, 144, 0.2);
+            box-shadow: 0 0 0 rgba(56, 189, 248, 0.05);
+            transition: transform 0.4s ease, box-shadow 0.4s ease, background 0.4s ease, opacity 0.4s ease;
+            opacity: 0.45;
+        }
+        .neuron::after {
+            content: '';
+            position: absolute;
+            inset: 15%;
+            border-radius: 9999px;
+            background: radial-gradient(circle at 50% 50%, rgba(125, 211, 252, 0.8), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .neuron.active::after {
+            opacity: 1;
+        }
+        .neuron strong {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.55rem;
+            font-weight: 600;
+            color: rgba(226, 232, 240, 0.92);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .neuron:hover strong {
+            opacity: 1;
+        }
+        .neuron-label {
+            font-size: 0.65rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(148, 163, 184, 0.8);
+        }
+        .stage-button {
+            border-radius: 9999px;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            padding: 0.5rem 1rem;
+            background: rgba(15, 23, 42, 0.6);
+            color: rgba(226, 232, 240, 0.9);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            transition: border 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+        .stage-button:hover {
+            color: white;
+            border-color: rgba(56, 189, 248, 0.6);
+            box-shadow: 0 10px 30px -20px rgba(56, 189, 248, 0.6);
+            transform: translateY(-1px);
+        }
+        .stage-button.active {
+            color: #0f172a;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.9), rgba(45, 212, 191, 0.9));
+            border-color: transparent;
+            box-shadow: 0 18px 40px -25px rgba(14, 165, 233, 0.85);
+        }
+        .stage-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        .stage-note::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 9999px;
+            background: rgba(56, 189, 248, 0.45);
+            flex-shrink: 0;
+            box-shadow: 0 0 6px rgba(45, 212, 191, 0.65);
+        }
     </style>
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col">
@@ -207,6 +294,70 @@
                 </div>
             </div>
         </section>
+        <section class="relative border-t border-slate-800/60 overflow-hidden py-16">
+            <div class="absolute -top-40 left-1/2 h-[540px] w-[540px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-3xl"></div>
+            <div class="absolute -bottom-40 right-0 h-[420px] w-[420px] rounded-full bg-emerald-400/10 blur-3xl"></div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.35em] text-slate-400">Neural telemetry</p>
+                        <h2 class="mt-3 text-3xl font-bold text-white">Neural activation observatory</h2>
+                        <p class="mt-3 text-sm sm:text-base text-slate-300 max-w-2xl">
+                            Watch 590 neurons pulse as a reinforcement learner travels from random exploration to a confident policy. Toggle stages to contrast pre-training silence, exploratory spikes, value stabilization, and post-training execution.
+                        </p>
+                    </div>
+                    <button id="cycle-stage" class="stage-button flex items-center gap-2 whitespace-nowrap">
+                        <span class="h-2 w-2 rounded-full bg-emerald-300 animate-ping"></span>
+                        <span id="cycle-stage-label">Auto-play stages</span>
+                    </button>
+                </div>
+                <div class="mt-10 grid gap-10 xl:grid-cols-[1.1fr,1.9fr]">
+                    <div class="bg-slate-950/70 border border-slate-800 rounded-[28px] p-6 flex flex-col gap-6">
+                        <div class="space-y-4">
+                            <div class="flex flex-wrap gap-3" id="stage-buttons"></div>
+                            <div>
+                                <p class="text-xs uppercase tracking-wide text-slate-400">Stage</p>
+                                <h3 id="stage-title" class="mt-2 text-2xl font-semibold text-white">Pre-training baseline</h3>
+                                <p id="stage-description" class="mt-3 text-sm text-slate-300 leading-relaxed"></p>
+                            </div>
+                        </div>
+                        <div class="grid gap-4 sm:grid-cols-3">
+                            <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                                <p class="text-[0.65rem] uppercase tracking-[0.3em] text-slate-400">Average reward</p>
+                                <p id="metric-reward" class="mt-2 text-xl font-semibold text-white">−0.42 ± 0.2</p>
+                                <p class="mt-2 text-xs text-slate-400">Rolling signal from critic</p>
+                            </div>
+                            <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                                <p class="text-[0.65rem] uppercase tracking-[0.3em] text-slate-400">Policy entropy</p>
+                                <p id="metric-entropy" class="mt-2 text-xl font-semibold text-white">0.98</p>
+                                <p class="mt-2 text-xs text-slate-400">Higher = more exploratory</p>
+                            </div>
+                            <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                                <p class="text-[0.65rem] uppercase tracking-[0.3em] text-slate-400">Value confidence</p>
+                                <p id="metric-confidence" class="mt-2 text-xl font-semibold text-white">0.08</p>
+                                <p class="mt-2 text-xs text-slate-400">Signal strength in critic head</p>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-xs uppercase tracking-wide text-slate-400">What to notice</p>
+                            <ul id="stage-notes" class="mt-3 space-y-2 text-sm text-slate-300"></ul>
+                        </div>
+                    </div>
+                    <div class="bg-slate-950/70 border border-slate-800 rounded-[28px] p-6">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <h3 class="text-xl font-semibold text-white">Neural lattice</h3>
+                                <p class="text-sm text-slate-400">Animated activation map across encoder, policy, critic, and action heads.</p>
+                            </div>
+                            <p id="stage-caption" class="text-xs uppercase tracking-[0.3em] text-slate-400">Quiet weights</p>
+                        </div>
+                        <div id="neural-scroll" class="mt-8 overflow-x-auto pb-4">
+                            <div id="neural-layers" class="flex gap-6 min-w-max"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <footer class="border-t border-slate-800/60 bg-slate-950/80">
@@ -225,6 +376,339 @@
         const yearTarget = document.getElementById('footer-year');
         if (yearTarget) {
             yearTarget.textContent = new Date().getFullYear();
+        }
+
+        const stageButtonsContainer = document.getElementById('stage-buttons');
+        const neuralLayersContainer = document.getElementById('neural-layers');
+        if (stageButtonsContainer && neuralLayersContainer) {
+            const stageTitle = document.getElementById('stage-title');
+            const stageDescription = document.getElementById('stage-description');
+            const stageNotes = document.getElementById('stage-notes');
+            const stageCaption = document.getElementById('stage-caption');
+            const metricReward = document.getElementById('metric-reward');
+            const metricEntropy = document.getElementById('metric-entropy');
+            const metricConfidence = document.getElementById('metric-confidence');
+            const cycleStageButton = document.getElementById('cycle-stage');
+            const cycleStageLabel = document.getElementById('cycle-stage-label');
+
+            const layerDefinitions = [
+                { key: 'encoder', name: 'State encoder', count: 120, columns: 6 },
+                { key: 'policyA', name: 'Policy stream α', count: 110, columns: 10 },
+                { key: 'policyB', name: 'Policy stream β', count: 110, columns: 10 },
+                { key: 'critic', name: 'Value critic', count: 100, columns: 8 },
+                { key: 'advantage', name: 'Advantage mixer', count: 80, columns: 8 },
+                { key: 'action', name: 'Action logits', count: 70, columns: 7 },
+            ];
+
+            const layerColors = {
+                encoder: { h: 190, s: 82 },
+                policyA: { h: 202, s: 78 },
+                policyB: { h: 180, s: 76 },
+                critic: { h: 162, s: 70 },
+                advantage: { h: 170, s: 76 },
+                action: { h: 188, s: 84 },
+            };
+
+            const neuralStages = {
+                preTraining: {
+                    buttonLabel: 'Pre-training',
+                    name: 'Pre-training baseline',
+                    description:
+                        'Weights are freshly initialized. Neurons fire uniformly with only noise-level structure, so both policy and critic remain unsure about which moves matter.',
+                    caption: 'Quiet weights',
+                    metrics: {
+                        reward: '−0.42 ± 0.20',
+                        entropy: '0.98',
+                        confidence: '0.08',
+                    },
+                    notes: [
+                        'Low, uniform firing across the encoder shows untrained feature detectors.',
+                        'Policy streams glow evenly because ε-greedy sampling dominates decisions.',
+                        'Critic and action heads flicker faintly with high variance and little structure.',
+                    ],
+                    baseIntensity: 0.12,
+                    layerBase: { encoder: 0.16, policyA: 0.13, policyB: 0.13, critic: 0.11, advantage: 0.1, action: 0.08 },
+                    layerFocus: {},
+                    layerOscillation: { encoder: 0.7, policyA: 0.9, policyB: 0.9, critic: 0.6, advantage: 0.6, action: 0.5 },
+                    cascadeStrength: 0.04,
+                    waveSpeed: 0.6,
+                    waveAmplitude: 0.05,
+                    globalPulse: 0.03,
+                    globalSpeed: 0.4,
+                    noise: 0.05,
+                },
+                exploration: {
+                    buttonLabel: 'Exploration',
+                    name: 'Exploratory surge',
+                    description:
+                        'The agent aggressively explores with a high ε. Encoder filters awaken as new observations stream in, while policy neurons spike from testing alternative actions.',
+                    caption: 'Exploration spikes',
+                    metrics: {
+                        reward: '−0.15 ± 0.40',
+                        entropy: '0.92',
+                        confidence: '0.24',
+                    },
+                    notes: [
+                        'State encoder lights up broadly while the agent scans unfamiliar states.',
+                        'Policy streams show rolling waves as ε-greedy sampling tries divergent behaviors.',
+                        'Critic neurons remain tentative, slowly brightening where reward gradients appear.',
+                    ],
+                    baseIntensity: 0.18,
+                    layerBase: { encoder: 0.28, policyA: 0.26, policyB: 0.25, critic: 0.18, advantage: 0.2, action: 0.17 },
+                    layerFocus: { encoder: 0.08, policyA: 0.12, policyB: 0.1 },
+                    layerOscillation: { encoder: 1.4, policyA: 1.6, policyB: 1.5, critic: 1.1, advantage: 1.3, action: 1.1 },
+                    layerCascadeFocus: { policyA: 1.4, policyB: 1.3 },
+                    focusPulse: { encoder: 0.06 },
+                    cascadeStrength: 0.09,
+                    cascadeSpeed: 1.2,
+                    waveSpeed: 1.5,
+                    waveAmplitude: 0.12,
+                    globalPulse: 0.05,
+                    globalSpeed: 0.7,
+                    noise: 0.08,
+                },
+                policyRefinement: {
+                    buttonLabel: 'Policy update',
+                    name: 'Policy + value refinement',
+                    description:
+                        'Experience consolidates through replay and gradient updates. Critic neurons synchronize with policy backbones to stabilize return estimates.',
+                    caption: 'Synchronized updates',
+                    metrics: {
+                        reward: '4.6 ± 1.2',
+                        entropy: '0.58',
+                        confidence: '0.62',
+                    },
+                    notes: [
+                        'Policy streams brighten in coordinated bands that trace rewarding trajectories.',
+                        'Value critic neurons sustain longer pulses as returns become predictable.',
+                        'Action logits sharpen, revealing a clear preference for efficient moves.',
+                    ],
+                    baseIntensity: 0.24,
+                    layerBase: { encoder: 0.24, policyA: 0.32, policyB: 0.31, critic: 0.3, advantage: 0.28, action: 0.26 },
+                    layerFocus: { critic: 0.12, advantage: 0.08, action: 0.06 },
+                    layerOscillation: { encoder: 1.0, policyA: 1.2, policyB: 1.2, critic: 1.5, advantage: 1.3, action: 1.2 },
+                    layerCascadeFocus: { critic: 1.5, advantage: 1.4 },
+                    focusPulse: { critic: 0.08, advantage: 0.06 },
+                    cascadeStrength: 0.12,
+                    cascadeSpeed: 1.0,
+                    waveSpeed: 0.9,
+                    waveAmplitude: 0.1,
+                    globalPulse: 0.04,
+                    globalSpeed: 0.55,
+                    noise: 0.06,
+                },
+                deployment: {
+                    buttonLabel: 'Post-training',
+                    name: 'Post-training execution',
+                    description:
+                        'With exploration minimal, the agent exploits refined value estimates. Activity concentrates where the optimal policy demands confident decisions.',
+                    caption: 'Decisive policy',
+                    metrics: {
+                        reward: '9.8 ± 0.4',
+                        entropy: '0.12',
+                        confidence: '0.91',
+                    },
+                    notes: [
+                        'The encoder calms, highlighting only the features relevant to the optimal route.',
+                        'Value critic neurons glow steadily along the goal corridor.',
+                        'Action logits concentrate into a bright band showing confident exploitation.',
+                    ],
+                    baseIntensity: 0.2,
+                    layerBase: { encoder: 0.18, policyA: 0.28, policyB: 0.27, critic: 0.35, advantage: 0.32, action: 0.38 },
+                    layerFocus: { action: 0.16, critic: 0.14, advantage: 0.1 },
+                    layerOscillation: { encoder: 0.6, policyA: 0.9, policyB: 0.9, critic: 1.2, advantage: 1.1, action: 1.4 },
+                    layerCascadeFocus: { action: 1.6, critic: 1.4 },
+                    focusPulse: { action: 0.1 },
+                    cascadeStrength: 0.1,
+                    cascadeSpeed: 0.9,
+                    cascadeCurve: 1.4,
+                    waveSpeed: 0.7,
+                    waveAmplitude: 0.07,
+                    globalPulse: 0.03,
+                    globalSpeed: 0.45,
+                    noise: 0.04,
+                },
+            };
+
+            const stageOrder = Object.keys(neuralStages);
+            const stageButtons = {};
+            const neurons = [];
+
+            layerDefinitions.forEach((layer) => {
+                const column = document.createElement('div');
+                column.className = 'neuron-column flex flex-col gap-3';
+
+                const header = document.createElement('div');
+                header.className = 'flex items-baseline justify-between';
+                const title = document.createElement('p');
+                title.className = 'text-sm font-semibold text-slate-100';
+                title.textContent = layer.name;
+                const count = document.createElement('span');
+                count.className = 'text-xs text-slate-500';
+                count.textContent = `${layer.count} neurons`;
+                header.appendChild(title);
+                header.appendChild(count);
+                column.appendChild(header);
+
+                const grid = document.createElement('div');
+                grid.className = 'neuron-grid';
+                grid.style.gridTemplateColumns = `repeat(${layer.columns}, minmax(0, 1fr))`;
+
+                for (let i = 0; i < layer.count; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'neuron';
+                    const label = document.createElement('strong');
+                    label.textContent = '0%';
+                    cell.appendChild(label);
+                    grid.appendChild(cell);
+                    neurons.push({
+                        element: cell,
+                        label,
+                        layer: layer.key,
+                        index: i,
+                        normalizedIndex: layer.count === 1 ? 0 : i / (layer.count - 1),
+                        offset: Math.random() * Math.PI * 2,
+                        activation: Math.random() * 0.1,
+                    });
+                }
+
+                column.appendChild(grid);
+                neuralLayersContainer.appendChild(column);
+            });
+
+            stageOrder.forEach((key) => {
+                const button = document.createElement('button');
+                button.className = 'stage-button';
+                button.textContent = neuralStages[key].buttonLabel;
+                button.addEventListener('click', () => {
+                    setStage(key, true);
+                });
+                stageButtonsContainer.appendChild(button);
+                stageButtons[key] = button;
+            });
+
+            let currentStageKey = stageOrder[0];
+            let autoPlay = false;
+            let autoTimer = null;
+
+            function applyActivationStyle(neuron) {
+                const color = layerColors[neuron.layer] || { h: 190, s: 70 };
+                const intensity = neuron.activation;
+                const lightness = 18 + intensity * 48;
+                const alpha = 0.25 + intensity * 0.65;
+                neuron.element.style.background = `hsla(${color.h}, ${color.s}%, ${lightness}%, ${alpha})`;
+                neuron.element.style.boxShadow = `0 0 ${4 + intensity * 22}px hsla(${color.h}, ${color.s}%, ${50 + intensity * 30}%, ${0.35 + intensity * 0.45})`;
+                neuron.element.style.opacity = (0.3 + intensity * 0.7).toFixed(3);
+                neuron.label.textContent = `${Math.round(intensity * 100)}%`;
+                if (intensity > 0.72) {
+                    neuron.element.classList.add('active');
+                } else {
+                    neuron.element.classList.remove('active');
+                }
+            }
+
+            function computeTarget(neuron, stage, seconds) {
+                const base = (stage.layerBase?.[neuron.layer] ?? stage.baseIntensity ?? 0.15) + (stage.layerFocus?.[neuron.layer] ?? 0);
+                const oscillationMultiplier = stage.layerOscillation?.[neuron.layer] ?? 1;
+                const oscillation = Math.sin(seconds * (stage.waveSpeed ?? 1) + neuron.offset + neuron.normalizedIndex * 3)
+                    * (stage.waveAmplitude ?? 0.09)
+                    * oscillationMultiplier;
+                const cascadeStrength = (stage.cascadeStrength ?? 0.05) * (stage.layerCascadeFocus?.[neuron.layer] ?? 1);
+                const cascadeCurve = stage.cascadeCurve ?? 1.1;
+                const cascade = Math.max(
+                    0,
+                    Math.sin(neuron.normalizedIndex * Math.PI * cascadeCurve + seconds * (stage.cascadeSpeed ?? 0.8))
+                ) * cascadeStrength;
+                const focusPulse = (stage.focusPulse?.[neuron.layer] ?? 0) * Math.max(0, Math.sin(seconds * 1.8 + neuron.offset));
+                const globalPulse = Math.sin(seconds * (stage.globalSpeed ?? 0.6) + neuron.offset * 0.25) * (stage.globalPulse ?? 0.04);
+                const noise = (Math.random() - 0.5) * (stage.noise ?? 0.05);
+                const target = base + oscillation + cascade + focusPulse + globalPulse + noise;
+                return Math.min(1, Math.max(0, target));
+            }
+
+            function renderNotes(stage) {
+                stageNotes.innerHTML = '';
+                stage.notes.forEach((note) => {
+                    const item = document.createElement('li');
+                    item.className = 'stage-note text-slate-300';
+                    item.textContent = note;
+                    stageNotes.appendChild(item);
+                });
+            }
+
+            function updateStageUI(stage) {
+                stageTitle.textContent = stage.name;
+                stageDescription.textContent = stage.description;
+                stageCaption.textContent = stage.caption;
+                metricReward.textContent = stage.metrics.reward;
+                metricEntropy.textContent = stage.metrics.entropy;
+                metricConfidence.textContent = stage.metrics.confidence;
+                renderNotes(stage);
+                Object.entries(stageButtons).forEach(([key, button]) => {
+                    button.classList.toggle('active', key === currentStageKey);
+                });
+            }
+
+            function setStage(key, userInitiated = false) {
+                if (!neuralStages[key]) return;
+                currentStageKey = key;
+                updateStageUI(neuralStages[key]);
+                if (autoPlay && userInitiated) {
+                    scheduleAutoAdvance();
+                }
+            }
+
+            function nextStage() {
+                const currentIndex = stageOrder.indexOf(currentStageKey);
+                const nextIndex = (currentIndex + 1) % stageOrder.length;
+                setStage(stageOrder[nextIndex]);
+            }
+
+            function scheduleAutoAdvance() {
+                if (autoTimer) {
+                    clearTimeout(autoTimer);
+                }
+                autoTimer = setTimeout(() => {
+                    nextStage();
+                    scheduleAutoAdvance();
+                }, 9000);
+            }
+
+            if (cycleStageButton) {
+                cycleStageButton.addEventListener('click', () => {
+                    autoPlay = !autoPlay;
+                    cycleStageButton.classList.toggle('active', autoPlay);
+                    if (cycleStageLabel) {
+                        cycleStageLabel.textContent = autoPlay ? 'Stop auto-play' : 'Auto-play stages';
+                    }
+                    if (autoPlay) {
+                        scheduleAutoAdvance();
+                    } else if (autoTimer) {
+                        clearTimeout(autoTimer);
+                        autoTimer = null;
+                    }
+                });
+            }
+
+            function animateNeurons(time) {
+                const seconds = time * 0.001;
+                const stage = neuralStages[currentStageKey];
+                neurons.forEach((neuron) => {
+                    const target = computeTarget(neuron, stage, seconds);
+                    neuron.activation += (target - neuron.activation) * 0.18;
+                    applyActivationStyle(neuron);
+                });
+                requestAnimationFrame(animateNeurons);
+            }
+
+            window.addEventListener('beforeunload', () => {
+                if (autoTimer) {
+                    clearTimeout(autoTimer);
+                }
+            });
+
+            setStage(currentStageKey);
+            requestAnimationFrame(animateNeurons);
         }
 
         const gridElement = document.getElementById('grid');
