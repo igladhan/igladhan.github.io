@@ -1,417 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Learning Lab</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        midnight: '#020617',
-                        aurora: '#34d399',
-                        cyantrack: '#06b6d4',
-                    },
-                    fontFamily: {
-                        inter: ['Inter', 'sans-serif'],
-                    },
-                },
-            },
-        };
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at top, rgba(56, 189, 248, 0.08), transparent 55%),
-                radial-gradient(circle at 20% 20%, rgba(52, 211, 153, 0.08), transparent 40%),
-                #020617;
-        }
-        .signal-cell {
-            width: 0.75rem;
-            height: 0.75rem;
-            border-radius: 9999px;
-            background: rgba(16, 185, 129, 0.35);
-            opacity: 0.25;
-            box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
-            transition: opacity 0.5s ease, background 0.5s ease, box-shadow 0.5s ease;
-            animation: signalPulse 3.5s ease-in-out infinite;
-        }
-        .signal-cell.active {
-            opacity: 1;
-            background: rgba(16, 185, 129, 0.95);
-            box-shadow: 0 0 12px rgba(16, 185, 129, 0.8), 0 0 30px rgba(59, 130, 246, 0.4);
-        }
-        @keyframes signalPulse {
-            0%, 100% {
-                transform: scale(1);
-                opacity: 0.4;
-            }
-            50% {
-                transform: scale(1.2);
-                opacity: 0.85;
-            }
-        }
-        .glow-border {
-            position: relative;
-        }
-        .glow-border::before {
-            content: '';
-            position: absolute;
-            inset: -1px;
-            border-radius: 24px;
-            padding: 1px;
-            background: linear-gradient(120deg, rgba(59, 130, 246, 0.45), rgba(16, 185, 129, 0.35), rgba(15, 23, 42, 0.9));
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reinforcement Learning Playground</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="text-slate-100 min-h-screen flex flex-col">
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[900px] bg-cyantrack/10 blur-3xl pointer-events-none"></div>
-    <header class="bg-slate-950/80 border-b border-slate-800 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between py-5">
-                <a href="index.html" class="flex items-center gap-3">
-                    <div class="h-11 w-11 rounded-xl bg-gradient-to-br from-aurora via-cyantrack to-sky-500 flex items-center justify-center font-bold text-slate-950 text-xl">AI</div>
-                    <span class="text-lg font-semibold tracking-wide">AI Learning Lab</span>
-                </a>
-                <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-                    <a href="machine-learning.html" class="hover:text-white transition">Machine Learning</a>
-                    <a href="neural-networks.html" class="hover:text-white transition">Neural Networks</a>
-                    <a href="reinforcement-learning.html" class="hover:text-white transition">Reinforcement Learning</a>
-                    <a href="reasoning.html" class="hover:text-white transition">Reasoning</a>
-                    <a href="hierarchical-reasoning.html" class="hover:text-white transition">Hierarchical Reasoning</a>
-                </nav>
-                <button id="mobile-menu-button" class="md:hidden text-slate-200">
-                    <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </button>
-            </div>
-            <div id="mobile-menu" class="md:hidden hidden pb-6">
-                <nav class="flex flex-col gap-3 text-sm font-medium text-slate-200">
-                    <a href="machine-learning.html" class="hover:text-white transition">Machine Learning</a>
-                    <a href="neural-networks.html" class="hover:text-white transition">Neural Networks</a>
-                    <a href="reinforcement-learning.html" class="hover:text-white transition">Reinforcement Learning</a>
-                    <a href="reasoning.html" class="hover:text-white transition">Reasoning</a>
-                    <a href="hierarchical-reasoning.html" class="hover:text-white transition">Hierarchical Reasoning</a>
-                </nav>
-            </div>
-        </div>
-    </header>
+<body>
+  <header class="hero">
+    <h1>Reinforcement Learning Playground</h1>
+    <p>
+      Experiment with Q-learning on a tiny grid world. Tune the hyperparameters,
+      watch the agent learn in real-time, and inspect the evolving Q-table.
+    </p>
+  </header>
 
-    <main class="flex-1 relative overflow-hidden">
-        <section class="relative py-24">
-            <div class="absolute -top-32 -right-24 w-96 h-96 bg-emerald-500/20 blur-3xl rounded-full"></div>
-            <div class="absolute -bottom-24 -left-32 w-[520px] h-[520px] bg-indigo-500/10 blur-3xl rounded-full"></div>
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-                <div class="grid lg:grid-cols-2 gap-16 items-center">
-                    <div>
-                        <span class="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-4 py-1 text-sm font-semibold tracking-wide text-emerald-300">
-                            <span class="h-2 w-2 rounded-full bg-emerald-300 animate-pulse"></span>
-                            Interactive AI curriculum
-                        </span>
-                        <h1 class="mt-8 text-4xl sm:text-5xl font-extrabold leading-tight text-white">
-                            Watch intelligent systems learn, adapt, and reason in real time.
-                        </h1>
-                        <p class="mt-6 text-lg text-slate-300 max-w-2xl">
-                            Explore a collection of hands-on modules that bring machine intelligence to life. Follow the learning journey from neural activation and gradient descent to reinforcement agents and structured reasoning.
-                        </p>
-                        <div class="mt-8 flex flex-col sm:flex-row gap-4">
-                            <a href="machine-learning.html" class="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-400 to-cyantrack px-8 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-400/30 transition hover:shadow-xl hover:shadow-cyantrack/40">
-                                Explore live training
-                            </a>
-                            <a href="#curriculum" class="inline-flex items-center justify-center rounded-full border border-slate-700 px-8 py-3 text-sm font-semibold text-slate-200 hover:border-emerald-400/60 hover:text-white">
-                                See the learning path
-                            </a>
-                        </div>
-                        <dl class="mt-12 grid grid-cols-2 gap-8 text-left">
-                            <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
-                                <dt class="text-xs uppercase tracking-wider text-slate-400">Live data processed</dt>
-                                <dd id="stat-samples" class="mt-3 text-3xl font-bold text-white">0</dd>
-                                <dd class="mt-1 text-sm text-slate-400">points streamed through the trainer</dd>
-                            </div>
-                            <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
-                                <dt class="text-xs uppercase tracking-wider text-slate-400">Reasoning steps logged</dt>
-                                <dd id="stat-reasoning" class="mt-3 text-3xl font-bold text-white">0</dd>
-                                <dd class="mt-1 text-sm text-slate-400">tracked across inference scenarios</dd>
-                            </div>
-                        </dl>
-                    </div>
-                    <div class="glow-border rounded-[26px] bg-slate-950/70 border border-slate-800 p-8">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-xs uppercase tracking-[0.3em] text-slate-500">Live modules</p>
-                                <h2 class="mt-2 text-2xl font-bold text-white">What you can control</h2>
-                            </div>
-                            <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/15 px-4 py-1 text-xs font-semibold text-emerald-300">
-                                <span class="h-2 w-2 rounded-full bg-emerald-300 animate-ping"></span>
-                                Real-time
-                            </span>
-                        </div>
-                        <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-slate-300">
-                            <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
-                                <p class="font-semibold text-white">Gradient descent trainer</p>
-                                <p class="mt-2 text-slate-400">Stream new data, tune learning rates, and watch the fit stabilize.</p>
-                            </div>
-                            <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
-                                <p class="font-semibold text-white">Q-learning explorer</p>
-                                <p class="mt-2 text-slate-400">Guide an agent through rewards, penalties, and evolving policies.</p>
-                            </div>
-                            <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
-                                <p class="font-semibold text-white">Neural activations</p>
-                                <p class="mt-2 text-slate-400">Shape inputs and watch neurons fire across layers of a network.</p>
-                            </div>
-                            <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
-                                <p class="font-semibold text-white">Reasoning timelines</p>
-                                <p class="mt-2 text-slate-400">Step through inference chains and hierarchical plans.</p>
-                            </div>
-                        </div>
-                        <div class="mt-10">
-                            <div class="relative h-48 rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
-                                <div id="signal-grid" class="absolute inset-0 grid grid-cols-12 grid-rows-8 gap-2 p-4"></div>
-                                <div class="absolute bottom-4 right-4 text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
-                                    Data stream monitor
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <section id="curriculum" class="relative py-24 border-t border-slate-800/60">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="max-w-3xl">
-                    <h2 class="text-3xl sm:text-4xl font-bold text-white">Five perspectives, one integrated learning journey.</h2>
-                    <p class="mt-4 text-lg text-slate-300">
-                        Each module has its own space where you can experiment, toggle parameters, and build intuition. Navigate freely or follow the recommended order below for a guided progression.
-                    </p>
-                </div>
-                <div class="mt-12 grid gap-6 lg:grid-cols-2">
-                    <article class="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition hover:border-emerald-400/60">
-                        <div class="flex items-start justify-between">
-                            <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500/15 text-sm font-semibold text-emerald-300">01</span>
-                            <a href="machine-learning.html" class="text-sm font-semibold text-emerald-300 hover:text-emerald-200">Open module →</a>
-                        </div>
-                        <h3 class="mt-6 text-2xl font-semibold text-white">Machine Learning in Motion</h3>
-                        <p class="mt-3 text-slate-400">
-                            Watch regression coefficients update live as new samples stream in. Tweak learning rates and observe how stability, bias, and variance respond in real time.
-                        </p>
-                        <ul class="mt-6 space-y-2 text-sm text-slate-400">
-                            <li>• Gradient descent visualized on evolving data</li>
-                            <li>• Loss, slope, and intercept tracked per update</li>
-                            <li>• Streaming sample feed to mimic sensor data</li>
-                        </ul>
-                    </article>
-                    <article class="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition hover:border-cyantrack/60">
-                        <div class="flex items-start justify-between">
-                            <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-cyantrack/15 text-sm font-semibold text-cyantrack">02</span>
-                            <a href="neural-networks.html" class="text-sm font-semibold text-cyantrack hover:text-cyan-200">Open module →</a>
-                        </div>
-                        <h3 class="mt-6 text-2xl font-semibold text-white">Neural Networks & Activations</h3>
-                        <p class="mt-3 text-slate-400">
-                            Manipulate feature inputs and see hidden neurons respond instantly. Our visualization highlights activations, connection strengths, and the decision boundary forming at the output.
-                        </p>
-                        <ul class="mt-6 space-y-2 text-sm text-slate-400">
-                            <li>• Layer-by-layer animation of signal flow</li>
-                            <li>• Weighted connections color-coded by influence</li>
-                            <li>• Live interpretation of the network’s verdict</li>
-                        </ul>
-                    </article>
-                    <article class="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition hover:border-sky-400/60">
-                        <div class="flex items-start justify-between">
-                            <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/15 text-sm font-semibold text-sky-300">03</span>
-                            <a href="reinforcement-learning.html" class="text-sm font-semibold text-sky-300 hover:text-sky-200">Open module →</a>
-                        </div>
-                        <h3 class="mt-6 text-2xl font-semibold text-white">Reinforcement Learning Arena</h3>
-                        <p class="mt-3 text-slate-400">
-                            Train an explorer to navigate rewards and penalties in a dynamic grid world. Adjust exploration and review how policies converge through repeated experience.</p>
-                        <ul class="mt-6 space-y-2 text-sm text-slate-400">
-                            <li>• Q-table heatmap updating at every step</li>
-                            <li>• Episode summaries with reward trends</li>
-                            <li>• Visual agent trail showing discovered routes</li>
-                        </ul>
-                    </article>
-                    <article class="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition hover:border-purple-400/60">
-                        <div class="flex items-start justify-between">
-                            <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-purple-500/20 text-sm font-semibold text-purple-200">04</span>
-                            <a href="reasoning.html" class="text-sm font-semibold text-purple-200 hover:text-purple-100">Open module →</a>
-                        </div>
-                        <h3 class="mt-6 text-2xl font-semibold text-white">Reasoning Timelines</h3>
-                        <p class="mt-3 text-slate-400">
-                            Step through cognitive chains that transform observations into conclusions. Inspect inference rules and watch the timeline light up, one deduction at a time.
-                        </p>
-                        <ul class="mt-6 space-y-2 text-sm text-slate-400">
-                            <li>• Scenario-based forward chaining</li>
-                            <li>• Adjustable cadence for each reasoning step</li>
-                            <li>• Rich annotations linking rules to outcomes</li>
-                        </ul>
-                    </article>
-                    <article class="lg:col-span-2 rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition hover:border-emerald-400/60">
-                        <div class="flex items-start justify-between">
-                            <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-400/20 text-sm font-semibold text-emerald-200">05</span>
-                            <a href="hierarchical-reasoning.html" class="text-sm font-semibold text-emerald-200 hover:text-emerald-100">Open module →</a>
-                        </div>
-                        <h3 class="mt-6 text-2xl font-semibold text-white">Hierarchical Reasoning Studio</h3>
-                        <p class="mt-3 text-slate-400">
-                            Decompose complex goals into layered strategies and atomic actions. Follow adaptive plans as they cascade from high-level intent down to ground-level execution.
-                        </p>
-                        <div class="mt-6 grid gap-4 sm:grid-cols-3 text-sm text-slate-400">
-                            <div>
-                                <p class="text-white font-semibold">Level orchestration</p>
-                                <p class="mt-1">Trace how intentions split into tactical sub-goals.</p>
-                            </div>
-                            <div>
-                                <p class="text-white font-semibold">Live focus panel</p>
-                                <p class="mt-1">Click any node to surface context and dependencies.</p>
-                            </div>
-                            <div>
-                                <p class="text-white font-semibold">Execution cadence</p>
-                                <p class="mt-1">Play animations that reveal sequencing across tiers.</p>
-                            </div>
-                        </div>
-                    </article>
-                </div>
-            </div>
-        </section>
-        <section class="relative py-24">
-            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="rounded-[32px] border border-slate-800 bg-slate-950/70 p-8 md:p-12">
-                    <div class="md:flex md:items-start md:justify-between md:gap-12">
-                        <div class="max-w-xl">
-                            <h2 class="text-3xl font-bold text-white">How the modules connect</h2>
-                            <p class="mt-4 text-slate-300">
-                                The path mirrors how modern AI systems are built. We begin with data-driven pattern discovery, move into representation learning, then layer on decision-making and structured reasoning.
-                            </p>
-                        </div>
-                        <div class="mt-8 md:mt-0">
-                            <span class="inline-flex items-center gap-2 rounded-full border border-slate-700 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">Roadmap</span>
-                        </div>
-                    </div>
-                    <div class="mt-10 grid gap-6 md:grid-cols-3">
-                        <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-                            <p class="text-sm font-semibold uppercase tracking-wide text-slate-400">Foundation</p>
-                            <h3 class="mt-3 text-xl font-semibold text-white">Learning from signals</h3>
-                            <p class="mt-3 text-sm text-slate-400">
-                                Build intuition around gradient-based learning and how models adapt to noisy, streaming data sources.
-                            </p>
-                        </div>
-                        <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-                            <p class="text-sm font-semibold uppercase tracking-wide text-slate-400">Representation</p>
-                            <h3 class="mt-3 text-xl font-semibold text-white">Activations to policies</h3>
-                            <p class="mt-3 text-sm text-slate-400">
-                                See how neural activations transform into actionable knowledge and guide an agent’s choices in uncertain environments.
-                            </p>
-                        </div>
-                        <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-                            <p class="text-sm font-semibold uppercase tracking-wide text-slate-400">Reasoning</p>
-                            <h3 class="mt-3 text-xl font-semibold text-white">Inference and planning</h3>
-                            <p class="mt-3 text-sm text-slate-400">
-                                Translate learned policies into multi-step reasoning chains and hierarchical plans that tackle complex goals.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+  <main class="layout">
+    <section class="controls panel">
+      <h2>Training Controls</h2>
+      <div class="field">
+        <label for="alpha">Learning Rate (α)</label>
+        <input type="range" id="alpha" min="0.05" max="1" value="0.3" step="0.05" />
+        <span id="alpha-value">0.30</span>
+      </div>
+      <div class="field">
+        <label for="gamma">Discount (γ)</label>
+        <input type="range" id="gamma" min="0.5" max="0.99" value="0.9" step="0.01" />
+        <span id="gamma-value">0.90</span>
+      </div>
+      <div class="field">
+        <label for="epsilon">Exploration (ε)</label>
+        <input type="range" id="epsilon" min="0" max="1" value="0.2" step="0.05" />
+        <span id="epsilon-value">0.20</span>
+      </div>
+      <div class="field">
+        <label for="speed">Speed (ms per step)</label>
+        <input type="range" id="speed" min="0" max="600" value="200" step="20" />
+        <span id="speed-value">200</span>
+      </div>
+      <div class="actions">
+        <button id="start">Start Training</button>
+        <button id="stop" disabled>Pause</button>
+        <button id="reset">Reset</button>
+      </div>
+      <div class="stats">
+        <div><span>Episode:</span> <strong id="episode">0</strong></div>
+        <div><span>Steps (current):</span> <strong id="steps">0</strong></div>
+        <div><span>Total Reward (current):</span> <strong id="reward">0</strong></div>
+        <div><span>Exploration Rate:</span> <strong id="epsilon-live">0.20</strong></div>
+      </div>
+      <details class="info">
+        <summary>How it works</summary>
+        <p>
+          The agent starts in the top-left corner of the grid and attempts to reach
+          the goal in the bottom-right corner. Each move costs -1 reward, colliding
+          with a wall leaves the agent in place, and reaching the goal yields +10.
+          The Q-table captures the value of taking each action from each state.
+        </p>
+      </details>
+    </section>
 
-        <section class="py-24 border-t border-slate-800/60">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <span class="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300">Get started</span>
-                <h2 class="mt-6 text-3xl sm:text-4xl font-bold text-white">Dive into the module that matches your curiosity</h2>
-                <p class="mt-4 text-lg text-slate-300">Whether you are exploring machine learning for the first time or showcasing advanced reasoning, each page is ready to demonstrate concepts live with every interaction.</p>
-                <div class="mt-10 flex flex-wrap justify-center gap-4">
-                    <a href="machine-learning.html" class="rounded-full bg-gradient-to-r from-emerald-400 to-cyantrack px-6 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-400/30 hover:shadow-xl hover:shadow-cyantrack/40">Start with machine learning</a>
-                    <a href="reinforcement-learning.html" class="rounded-full border border-slate-700 px-6 py-3 text-sm font-semibold text-slate-200 hover:border-sky-400/60 hover:text-white">Train an RL agent</a>
-                    <a href="hierarchical-reasoning.html" class="rounded-full border border-slate-700 px-6 py-3 text-sm font-semibold text-slate-200 hover:border-emerald-400/60 hover:text-white">Plan with hierarchy</a>
-                </div>
-            </div>
-        </section>
-    </main>
-    <footer class="border-t border-slate-800/60 bg-slate-950/80">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="grid gap-8 md:grid-cols-4">
-                <div>
-                    <p class="text-lg font-semibold text-white">AI Learning Lab</p>
-                    <p class="mt-3 text-sm text-slate-400">Interactive demos showcasing how machines learn, adapt, and reason through complex tasks.</p>
-                </div>
-                <div>
-                    <p class="text-sm font-semibold uppercase tracking-wide text-slate-400">Experiments</p>
-                    <ul class="mt-3 space-y-2 text-sm text-slate-300">
-                        <li><a href="machine-learning.html" class="hover:text-white">Machine learning trainer</a></li>
-                        <li><a href="reinforcement-learning.html" class="hover:text-white">Reinforcement agent</a></li>
-                        <li><a href="neural-networks.html" class="hover:text-white">Neural activations</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <p class="text-sm font-semibold uppercase tracking-wide text-slate-400">Reasoning</p>
-                    <ul class="mt-3 space-y-2 text-sm text-slate-300">
-                        <li><a href="reasoning.html" class="hover:text-white">Inference explorer</a></li>
-                        <li><a href="hierarchical-reasoning.html" class="hover:text-white">Hierarchy studio</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <p class="text-sm font-semibold uppercase tracking-wide text-slate-400">Stay curious</p>
-                    <p class="mt-3 text-sm text-slate-400">Experiment with parameters, rerun simulations, and share what you learn.</p>
-                </div>
-            </div>
-            <div class="mt-12 border-t border-slate-800 pt-6 text-center text-sm text-slate-500">
-                © <span id="footer-year"></span> AI Learning Lab. All demonstrations run locally in your browser.
-            </div>
-        </div>
-    </footer>
+    <section class="visuals">
+      <div class="canvas-wrapper panel">
+        <h2>Environment</h2>
+        <canvas id="world" width="400" height="400" aria-label="Grid world"></canvas>
+      </div>
+      <div class="panel table-panel">
+        <h2>Q-table</h2>
+        <div id="q-table" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
 
-    <script>
-        const mobileButton = document.getElementById('mobile-menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
-        if (mobileButton && mobileMenu) {
-            mobileButton.addEventListener('click', () => {
-                mobileMenu.classList.toggle('hidden');
-            });
-        }
+  <footer>
+    <p>
+      Built for curious learners. Modify the code and extend the environment to try
+      new reward structures or policies!
+    </p>
+  </footer>
 
-        const signalGrid = document.getElementById('signal-grid');
-        if (signalGrid) {
-            const totalCells = 96;
-            for (let i = 0; i < totalCells; i++) {
-                const cell = document.createElement('span');
-                cell.className = 'signal-cell';
-                cell.style.animationDelay = `${Math.random() * 3}s`;
-                signalGrid.appendChild(cell);
-            }
-            const cells = Array.from(signalGrid.children);
-            setInterval(() => {
-                const activeCount = 8 + Math.floor(Math.random() * 8);
-                cells.forEach((cell) => cell.classList.remove('active'));
-                for (let i = 0; i < activeCount; i++) {
-                    const cell = cells[Math.floor(Math.random() * cells.length)];
-                    cell.classList.add('active');
-                }
-            }, 1400);
-        }
-
-        const statSamples = document.getElementById('stat-samples');
-        const statReasoning = document.getElementById('stat-reasoning');
-        let samplesValue = 1280;
-        let reasoningValue = 420;
-        setInterval(() => {
-            samplesValue += Math.floor(Math.random() * 45) + 30;
-            reasoningValue += Math.floor(Math.random() * 8) + 4;
-            if (statSamples) statSamples.textContent = samplesValue.toLocaleString();
-            if (statReasoning) statReasoning.textContent = reasoningValue.toLocaleString();
-        }, 2200);
-
-        const yearTarget = document.getElementById('footer-year');
-        if (yearTarget) {
-            yearTarget.textContent = new Date().getFullYear();
-        }
-    </script>
+  <script src="app.js"></script>
 </body>
 </html>
