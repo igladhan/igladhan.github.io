@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="vellum">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bestiarium Mundi — Global Archive of Historical Mythical Creature Depictions</title>
+  <meta name="description" content="An encyclopedic museum archive of authentic, human-made historical depictions of mythical creatures across 40,000 years of world art, archaeology, manuscripts, bronzes, reliefs, and prints." />
+  <meta name="theme-color" content="#f4efe6" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Sticky Museum Masthead -->
+  <header class="masthead-bar" role="banner">
+    <div class="masthead-inner">
+      <a href="#top" class="brand-mark" id="brand-home-link">
+        <span class="brand-sigil">Bestiarium Mundi</span>
+        <span class="brand-subtitle">Corpus of Historical Mythical Depictions</span>
+      </a>
+
+      <div class="masthead-actions">
+        <span class="masthead-stat" id="masthead-corpus-stat" aria-live="polite">Loading Corpus…</span>
+        <button type="button" class="btn-utility" id="btn-random-specimen" title="Inspect a random historical artifact">
+          <span>Random Plate</span>
+        </button>
+        <button type="button" class="btn-utility" id="btn-theme-toggle" aria-label="Switch exhibition lighting theme">
+          <span id="theme-toggle-label">Nocturne Basalt</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- Exhibition Hero & Copperplate Frontispiece -->
+    <section class="hero-folio" aria-labelledby="exhibition-main-heading">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="hero-kicker">Archaeological &amp; Art-Historical Compendium · c. 38,000 BCE – 1900 CE</p>
+          <h1 class="hero-title" id="exhibition-main-heading">
+            Every Monster Humanity Carved, Cast, Painted &amp; <em>Illuminated</em>
+          </h1>
+          <p class="hero-lead">
+            Gathered across nine civilizational wings—from Aurignacian mammoth ivory, Babylonian glazed brick, and Shang ritual bronzes to medieval bestiaries, Mesoamerican turquoise mosaics, and Edo woodblocks. Strictly authentic, human-made historical works held in the world’s museums and libraries.
+          </p>
+
+          <div class="hero-metrics" id="hero-metrics-bar">
+            <div class="metric-cell">
+              <span class="metric-value" id="stat-total-works">—</span>
+              <span class="metric-label">Cataloged Plates</span>
+            </div>
+            <div class="metric-cell">
+              <span class="metric-value" id="stat-total-creatures">—</span>
+              <span class="metric-label">Distinct Beasts</span>
+            </div>
+            <div class="metric-cell">
+              <span class="metric-value" id="stat-total-cultures">—</span>
+              <span class="metric-label">Civilizations</span>
+            </div>
+            <div class="metric-cell">
+              <span class="metric-value" id="stat-year-span">40,000 yrs</span>
+              <span class="metric-label">Chronological Span</span>
+            </div>
+          </div>
+        </div>
+
+        <figure class="frontispiece-frame">
+          <img
+            src="assets/frontispiece.jpg"
+            alt="Copperplate frontispiece frieze depicting an Assyrian Lamassu, Etruscan Chimera, Chinese Dragon, Greek Sphinx, and Mesoamerican Feathered Serpent"
+            class="frontispiece-img"
+            width="1280"
+            height="720"
+          />
+          <figcaption class="frontispiece-caption">
+            <span>FIG. 00 · EXHIBITION FRONTISPIECE ENGRAVING</span>
+            <span>HUMAN-MADE ARCHIVE · ZERO AI SPECIMENS IN CORPUS</span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Nine Civilizational Museum Wings -->
+    <nav class="wings-section" aria-label="Civilizational Museum Wings">
+      <div class="section-overline">
+        <span class="overline-label">I. Select Civilizational Wing</span>
+        <span class="overline-label" id="active-wing-indicator">All Nine Global Wings</span>
+      </div>
+      <div class="wings-strip" id="wings-filter-strip" role="toolbar" aria-label="Filter by region">
+        <!-- Populated dynamically by app.js -->
+      </div>
+    </nav>
+
+    <!-- Search, Facets, Chronological Horizon & View Mode Switcher -->
+    <section class="control-deck" aria-label="Archive Search and Taxonomic Filters">
+      <div class="controls-primary-row">
+        <div class="search-box">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="20" y1="20" x2="16.2" y2="16.2"></line>
+          </svg>
+          <label for="archive-search-input" class="sr-only">Search creatures, cultures, museums, mediums, or anatomy</label>
+          <input
+            type="search"
+            id="archive-search-input"
+            class="search-input"
+            placeholder="Search creature (e.g. Lamassu, Griffin, Makara, Dragon), culture, museum, or anatomy…"
+            autocomplete="off"
+          />
+          <kbd class="search-kbd" aria-hidden="true">/</kbd>
+        </div>
+
+        <div>
+          <label for="filter-era-select" class="sr-only">Historical Era</label>
+          <select id="filter-era-select" class="filter-select">
+            <option value="ALL">All Historical Eras</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="filter-morphology-select" class="sr-only">Creature Morphology</label>
+          <select id="filter-morphology-select" class="filter-select">
+            <option value="ALL">All Creature Morphologies</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="filter-medium-select" class="sr-only">Physical Medium</label>
+          <select id="filter-medium-select" class="filter-select">
+            <option value="ALL">All Material Media</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="sort-order-select" class="sr-only">Sort Order</label>
+          <select id="sort-order-select" class="filter-select">
+            <option value="chrono-asc">Oldest First (38,000 BCE →)</option>
+            <option value="chrono-desc">Newest First (1900 CE →)</option>
+            <option value="creature-asc">Creature Name (A–Z)</option>
+            <option value="culture-asc">Civilization (A–Z)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="controls-secondary-row">
+        <div class="chrono-scrubber" aria-label="Chronological Horizon Filter">
+          <span class="chrono-label" id="chrono-range-readout">38,000 BCE – 1905 CE</span>
+          <div class="chrono-sliders">
+            <label for="slider-year-min" class="sr-only">Minimum Year Stop</label>
+            <input type="range" id="slider-year-min" min="0" max="100" value="0" step="1" />
+            <label for="slider-year-max" class="sr-only">Maximum Year Stop</label>
+            <input type="range" id="slider-year-max" min="0" max="100" value="100" step="1" />
+          </div>
+        </div>
+
+        <div class="view-tabs" role="tablist" aria-label="Exhibition Display Mode">
+          <button type="button" role="tab" class="view-tab" id="tab-view-gallery" data-view="gallery" aria-selected="true">
+            Museum Plates
+          </button>
+          <button type="button" role="tab" class="view-tab" id="tab-view-timeline" data-view="timeline" aria-selected="false">
+            Chronology
+          </button>
+          <button type="button" role="tab" class="view-tab" id="tab-view-concordance" data-view="concordance" aria-selected="false">
+            Creature Index
+          </button>
+          <button type="button" role="tab" class="view-tab" id="tab-view-atlas" data-view="atlas" aria-selected="false">
+            Provenance Atlas
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Active Filter Ribbon -->
+    <div class="results-Ribbon" aria-live="polite">
+      <div class="results-summary" id="results-count-summary">Preparing catalog…</div>
+      <div class="active-chips" id="active-filter-chips"></div>
+    </div>
+
+    <!-- Main Exhibition Display Stage -->
+    <section class="exhibition-stage" id="exhibition-stage" aria-label="Cataloged Historical Depictions">
+      <!-- Rendered dynamically by app.js -->
+    </section>
+  </main>
+
+  <!-- Floating Warburg Comparative Study Tray -->
+  <aside class="compare-dock" id="compare-dock" hidden aria-label="Comparative Specimen Study Tray">
+    <span class="overline-label">Comparative Tray (<span id="compare-count">0</span>/3)</span>
+    <div class="compare-slots" id="compare-slots"></div>
+    <button type="button" class="btn-utility" id="btn-open-compare">Compare Side-by-Side</button>
+    <button type="button" class="btn-reset-filters" id="btn-clear-compare">Clear</button>
+  </aside>
+
+  <!-- Monograph & Comparison Lightbox Modal -->
+  <div class="modal-backdrop" id="monograph-modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-heading">
+    <div class="monograph-dialog" id="monograph-dialog-content">
+      <!-- Populated dynamically by app.js -->
+    </div>
+  </div>
+
+  <!-- Archival Colophon -->
+  <footer class="colophon-footer" role="contentinfo">
+    <div class="colophon-inner">
+      <div style="max-width: 62ch;">
+        <strong style="color: var(--ink-primary); font-family: 'Cormorant Garamond', serif; font-size: 1.15rem;">Bestiarium Mundi · Archival Provenance Statement</strong>
+        <p style="margin: 0.45rem 0 0;">
+          Every cataloged plate in this compendium documents a verifiable, human-made historical artifact, sculpture, relief, vessel, manuscript illumination, textile, or print created prior to the modern era, sourced with direct attribution to public-domain and open-licensed museum photography on Wikimedia Commons. Curated and verified in parallel via the Argon Multi-Agent Archival Pipeline.
+        </p>
+      </div>
+      <div>
+        <div>Keyboard Shortcuts: <kbd>/</kbd> Search · <kbd>←</kbd> <kbd>→</kbd> Navigate Plates · <kbd>Esc</kbd> Close Monograph</div>
+        <div style="margin-top: 0.35rem;" id="colophon-build-stats">Corpus Compilation: Argon Archival Engine</div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="data/depictions.js" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
